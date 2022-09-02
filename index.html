@@ -112,7 +112,7 @@
               maxlength="140"
             />
           </div>
-          <button class="form-btn">Add Place</button>
+          <button class="add-btn">Add Place</button>
         </form>
       </ul>
 
@@ -128,5 +128,17 @@
     </div>
 
     <div id="map"></div>
+
+    <div class="modal hidden">
+      <button class="btn--close-modal">&times;</button>
+      <h2 class="modal__header">
+        Are you sure, you want to delete this element?
+      </h2>
+      <div class="btnsContainer">
+        <button class="modal-btn yes-btn">Yes sure</button>
+        <button class="modal-btn cancel-btn">Cancel</button>
+      </div>
+    </div>
+    <div class="overlay hidden"></div>
   </body>
 </html>

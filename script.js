@@ -12,7 +12,13 @@ const inputDate = document.querySelector(".form-input-date");
 const inputDuration = document.querySelector(".form-input-duration");
 const inputDescription = document.querySelector(".form-input-description");
 const errorContainer = document.querySelector(".error");
-const apiKey = "";
+const modal = document.querySelector(".modal");
+const overlay = document.querySelector(".overlay");
+const btnCloseModal = document.querySelector(".btn--close-modal");
+const yesBtn = document.querySelector(".yes-btn");
+const cancelBtn = document.querySelector(".cancel-btn");
+const apiKey =
+  "AAPK5fe32372c72e4d2d99a19f0b9eb99097Xx5NoKBs-oKmU-RCf2OJRQ5SbsX5oE7-rrsqSkVf_Tr_Eh5DeudXMHb0xLvCDorw";
 
 class Place {
   id = (Date.now() + "").slice(-10);
@@ -103,7 +109,7 @@ class App {
       }
     });
 
-    //Show the form whenever the user clicks on it
+    //Show the form whenever the user clicks on the map
     this.#map.on("click", this._showForm.bind(this));
 
     //render markers of local storage data
@@ -117,6 +123,7 @@ class App {
 
     form.classList.remove("hidden");
 
+    //get place data from latitude & longitude
     fetch(url)
       .then((res) => {
         return res.json();
@@ -126,6 +133,7 @@ class App {
         const city = data.address.city ?? "";
         const country = data.address.country ?? "";
 
+        //set input values
         inputPlace.value = namePlace;
         inputCity.value = city;
         inputCountry.value = country;
@@ -180,7 +188,7 @@ class App {
     const date = inputDate.value;
     const duration = +inputDuration.value;
     const description = inputDescription.value;
-    const { lat, lng } = this.#mapEvent.latlng;
+    const { lat, lng } = this.#mapEvent?.latlng ?? "";
     const coords = [lat, lng];
     let place;
     const regex1 = new RegExp("^[a-zA-ZÀ-Ÿ0-9-.',: ]*$");
@@ -283,22 +291,26 @@ class App {
 
   _renderplace(place) {
     const spentTime = (numberOfHours) => {
-      const division = numberOfHours / 24;
-      const days = Math.floor(division);
+      const days = Math.floor(numberOfHours / 24);
       const remainder = numberOfHours % 24;
       const hours = Math.floor(remainder);
-
       if (numberOfHours === 24) return `1 Day`;
       if (numberOfHours < 24) return `${hours} Hours`;
+      if (days === 1 && remainder === 1) return `${days} Day ${hours} Hour`;
       if (days === 1 && numberOfHours > 24) return `${days} Day ${hours} Hours`;
       if (remainder === 0) return `${days} Days`;
       if (remainder === 1) return `${days} Days ${hours} Hour`;
-      if (division === 1 && remainder === 1) return `${days} Day ${hours} Hour`;
       return `${days} Days ${hours} Hours`;
     };
 
     const html = `
     <li class="place" data-id="${place.id}">
+      <button class="btn btn-edit">
+       <i class="fa-solid fa-pen-to-square"></i>
+      </button>
+      <button class="btn btn-delete">
+        <i class="fa-solid fa-trash"></i>
+      </button>
       <h2 class="place-title">${place.title}</h2>
       <div class="place-details">
         <i class="fa-solid fa-location-dot fa-xl"></i>
@@ -326,6 +338,84 @@ class App {
     `;
 
     form.insertAdjacentHTML("afterend", html);
+
+    //edit place
+    const editBtn = document.querySelector(".btn-edit");
+    editBtn.addEventListener("click", this._editPlace.bind(this));
+
+    //delete place
+    const deleteBtn = document.querySelector(".btn-delete");
+    deleteBtn.addEventListener("click", this._confirmDelete.bind(this));
+  }
+
+  _findPlace(e) {
+    const placeElm = e.target.closest(".place");
+
+    if (!placeElm) return;
+
+    const place = this.#places.find(
+      (place) => place.id === placeElm.dataset.id
+    );
+    return place;
+  }
+
+  _setFormData(place) {
+    inputPlace.value = place.name;
+    inputCity.value = place.city;
+    inputCountry.value = place.country;
+    inputDate.value = place.date;
+    inputDuration.value = place.duration;
+    inputDescription.value = place.description;
+  }
+
+  _deletePlace(place) {
+    //remove place element
+    const placeInfo = document.querySelector(`[data-id = "${place.id}"`);
+    placeInfo.remove();
+    //containerplaces.removeChild(placeInfo);
+
+    //remove place marker
+    const marker = L.marker(place.coords);
+    this.#map.removeLayer(marker);
+
+    //remove place from local storage
+    const data = JSON.parse(localStorage.getItem("places"));
+    const filtered = data.filter((item) => item.id !== place.id);
+    localStorage.setItem("places", JSON.stringify(filtered));
+
+    //refresh page
+    document.location.reload();
+  }
+
+  _confirmDelete(e) {
+    e.preventDefault();
+    const place = this._findPlace(e);
+
+    //open modal
+    modal.classList.remove("hidden");
+    overlay.classList.remove("hidden");
+
+    const closeModal = function () {
+      modal.classList.add("hidden");
+      overlay.classList.add("hidden");
+    };
+
+    //event handlers
+    yesBtn.addEventListener("click", () => this._deletePlace(place));
+    cancelBtn.addEventListener("click", closeModal);
+    btnCloseModal.addEventListener("click", closeModal);
+    overlay.addEventListener("click", closeModal);
+  }
+
+  _editPlace(e) {
+    const place = this._findPlace(e);
+
+    //show form + set place data
+    form.classList.remove("hidden");
+    this._setFormData(place);
+
+    //remove the place that we want to modify
+    form.addEventListener("submit", () => this._deletePlace(place));
   }
 
   _moveToPopup(e) {
@@ -336,6 +426,7 @@ class App {
     const place = this.#places.find(
       (place) => place.id === placeElm.dataset.id
     );
+
     this.#map.setView(place.coords, 13, {
       animate: true,
       pan: {
