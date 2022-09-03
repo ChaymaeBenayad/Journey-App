@@ -121,6 +121,7 @@ a:visited {
   top: 30px;
 }
 
+.fa-sort,
 .fa-pen-to-square,
 .fa-trash {
   color: var(--color-brand-1);
@@ -291,11 +292,12 @@ a:visited {
   transition: all 0.5s;
 }
 
-.modal__header {
+.modal-header {
   font-size: 2rem;
   margin-bottom: 3rem;
   margin-top: 3rem;
   line-height: 1.2;
+  text-align: center;
 }
 
 .btnsContainer {
@@ -329,7 +331,7 @@ a:visited {
   background-color: var(--color-danger);
 }
 
-.btn--close-modal {
+.btn-close-modal {
   font-family: inherit;
   color: inherit;
   position: absolute;
@@ -341,7 +343,24 @@ a:visited {
   background: none;
 }
 
-.hidden {
+/* .hidden {
   visibility: hidden;
-  opacity: 0;
+  opacity: 0; 
+} */
+
+.containerBtns {
+  display: flex;
+  justify-content: flex-start;
+  gap: 2rem;
+}
+.sort-btn,
+.delete-all-btn {
+  cursor: pointer;
+  padding: 3px 8px;
+}
+
+.modal.hidden,
+.overlay.hidden,
+.containerBtns.hidden {
+  display: none;
 }

@@ -14,11 +14,14 @@ const inputDescription = document.querySelector(".form-input-description");
 const errorContainer = document.querySelector(".error");
 const modal = document.querySelector(".modal");
 const overlay = document.querySelector(".overlay");
-const btnCloseModal = document.querySelector(".btn--close-modal");
+const modalHeader = document.querySelector(".modal-header");
+const btnCloseModal = document.querySelector(".btn-close-modal");
 const yesBtn = document.querySelector(".yes-btn");
 const cancelBtn = document.querySelector(".cancel-btn");
-const apiKey =
-  "AAPK5fe32372c72e4d2d99a19f0b9eb99097Xx5NoKBs-oKmU-RCf2OJRQ5SbsX5oE7-rrsqSkVf_Tr_Eh5DeudXMHb0xLvCDorw";
+const btnsContainer = document.querySelector(".containerBtns");
+const sortBtn = document.querySelector(".sort-btn");
+const deleteAllBtn = document.querySelector(".delete-all-btn");
+const apiKey = "";
 
 class Place {
   id = (Date.now() + "").slice(-10);
@@ -339,6 +342,11 @@ class App {
 
     form.insertAdjacentHTML("afterend", html);
 
+    //show sort + delete all buttons
+    if (document.querySelectorAll(".place").length >= 2) {
+      btnsContainer.classList.remove("hidden");
+    }
+
     //edit place
     const editBtn = document.querySelector(".btn-edit");
     editBtn.addEventListener("click", this._editPlace.bind(this));
@@ -346,6 +354,17 @@ class App {
     //delete place
     const deleteBtn = document.querySelector(".btn-delete");
     deleteBtn.addEventListener("click", this._confirmDelete.bind(this));
+
+    //delete all places
+    deleteAllBtn.addEventListener("click", this._confirmDeleteAll.bind(this));
+
+    //sort places
+    let sorted = true;
+    sortBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      this._sort(sorted);
+      sorted = !sorted;
+    });
   }
 
   _findPlace(e) {
@@ -384,27 +403,32 @@ class App {
     localStorage.setItem("places", JSON.stringify(filtered));
 
     //refresh page
-    document.location.reload();
+    location.reload();
+  }
+
+  openModal() {
+    modal.classList.remove("hidden");
+    overlay.classList.remove("hidden");
+  }
+
+  closeModal() {
+    modal.classList.add("hidden");
+    overlay.classList.add("hidden");
   }
 
   _confirmDelete(e) {
     e.preventDefault();
     const place = this._findPlace(e);
 
-    //open modal
-    modal.classList.remove("hidden");
-    overlay.classList.remove("hidden");
+    modalHeader.textContent = "Are you sure, you want to delete this element ?";
 
-    const closeModal = function () {
-      modal.classList.add("hidden");
-      overlay.classList.add("hidden");
-    };
+    this.openModal();
 
     //event handlers
     yesBtn.addEventListener("click", () => this._deletePlace(place));
-    cancelBtn.addEventListener("click", closeModal);
-    btnCloseModal.addEventListener("click", closeModal);
-    overlay.addEventListener("click", closeModal);
+    cancelBtn.addEventListener("click", this.closeModal);
+    btnCloseModal.addEventListener("click", this.closeModal);
+    overlay.addEventListener("click", this.closeModal);
   }
 
   _editPlace(e) {
@@ -433,6 +457,38 @@ class App {
         duration: 1,
       },
     });
+  }
+
+  _sort(sort) {
+    const allPlaces = document.querySelectorAll(".place");
+    const places = sort
+      ? this.#places
+          .slice()
+          .sort((p1, p2) => new Date(p1.date) - new Date(p2.date))
+      : this.#places;
+    places.forEach((place) => {
+      allPlaces.forEach((elem) => elem.remove());
+      this._renderplace(place);
+    });
+  }
+
+  _deleteAll() {
+    localStorage.removeItem("places");
+    location.reload();
+  }
+
+  _confirmDeleteAll(e) {
+    e.preventDefault();
+
+    modalHeader.textContent = "Are you sure, you want to delete all ?";
+
+    this.openModal();
+
+    //event handlers
+    yesBtn.addEventListener("click", () => this._deleteAll());
+    cancelBtn.addEventListener("click", this.closeModal);
+    btnCloseModal.addEventListener("click", this.closeModal);
+    overlay.addEventListener("click", this.closeModal);
   }
 
   _setLocalStorage() {
