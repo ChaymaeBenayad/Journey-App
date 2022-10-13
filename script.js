@@ -21,7 +21,8 @@ const cancelBtn = document.querySelector(".cancel-btn");
 const btnsContainer = document.querySelector(".containerBtns");
 const sortBtn = document.querySelector(".sort-btn");
 const deleteAllBtn = document.querySelector(".delete-all-btn");
-const apiKey = "";
+const apiKey =
+  "AAPK5fe32372c72e4d2d99a19f0b9eb99097Xx5NoKBs-oKmU-RCf2OJRQ5SbsX5oE7-rrsqSkVf_Tr_Eh5DeudXMHb0xLvCDorw";
 
 class Place {
   id = (Date.now() + "").slice(-10);
