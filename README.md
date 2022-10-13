@@ -1,7 +1,7 @@
 
 # Journey Web Application
 
-Journey is a modern web application dedicated for people who loves traveling want to keep track of their visited places. It is developed using HTML5, CSS3, JavaScript and Leaflet open-source library.
+Journey is a modern web application dedicated for people who love traveling and want to keep track of their visited places. It is developed using HTML5, CSS3, JavaScript and Leaflet open-source library.
 
 ## Screenshot
 
